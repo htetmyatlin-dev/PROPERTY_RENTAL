@@ -5,6 +5,7 @@ dotenv.config()
 import app from "./app.js"
 import { Server } from "socket.io"
 import { socketHandler } from "./lib/socket.js"
+import { connectRedis } from "./lib/redis.js"
 
 const server = http.createServer(app)
 
@@ -18,7 +19,10 @@ const io = new Server(server, {
 })
 
 socketHandler(io);
+
+const PORT = process.env.PORT || 7000;
  
-server.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`)
+server.listen(PORT, async () => {
+    await connectRedis();
+    console.log(`Server is running on port ${PORT}`)
 })

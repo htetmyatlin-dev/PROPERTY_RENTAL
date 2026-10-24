@@ -51,7 +51,7 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const response = await axios.get("http://localhost:7000/api/auth/refresh-access-token", {
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/refresh-access-token`, {
                     withCredentials: true
                 });
                 

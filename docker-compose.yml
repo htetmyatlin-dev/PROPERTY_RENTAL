@@ -1,0 +1,86 @@
+services:
+  # Local development defaults; override these in .env before deployment.
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rental_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdevpostgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - rentify_network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-localdevredis}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-localdevredis}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping 2>/dev/null | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - rentify_network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-localdevpostgres}@db:5432/${POSTGRES_DB:-rental_db}?schema=public
+      PORT: ${PORT:-7000}
+      NODE_ENV: ${NODE_ENV:-development}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5000}
+      UPLOAD_DIR: /app/uploads
+      REDIS_URL: redis://:${REDIS_PASSWORD:-localdevredis}@redis:6379
+    ports:
+      - "7000:7000"
+    volumes:
+      - uploaded_files:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rentify_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:7000}
+        VITE_FILE_URL: ${VITE_FILE_URL:-http://localhost:7000}
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend
+    networks:
+      - rentify_network
+
+volumes:
+  postgres_data:
+  uploaded_files:
+  redis_data:
+
+networks:
+  rentify_network:
+    driver: bridge

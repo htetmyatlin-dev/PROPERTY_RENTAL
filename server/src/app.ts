@@ -2,6 +2,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import morgan from "morgan"
+import path from "node:path"
 
 import { errorHandler } from "./middleware/error.middleware.js"
 import { authRouter } from "./modules/auth/auth.route.js"
@@ -32,7 +33,7 @@ app.use(cors({
 app.use(morgan('dev'));
 
 // serving static files (images)
-app.use("/uploads", express.static(process.env.UPLOAD_DIR as string))
+app.use("/uploads", express.static(path.resolve(process.env.UPLOAD_DIR ?? "src/uploads")))
 
 app.use("/api/auth", authRouter)
 app.use("/api/users", userRouter)

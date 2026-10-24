@@ -7,6 +7,21 @@
 *
 * 🟢 You can import this file directly.
 */
+export const DepositRequestStatus = {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED'
+};
+export const EscrowStatus = {
+    PENDING: 'PENDING',
+    RELEASED: 'RELEASED',
+    REFUNDED: 'REFUNDED'
+};
+export const PaymentStatus = {
+    PENDING: 'PENDING',
+    COMPLETED: 'COMPLETED',
+    FAILED: 'FAILED'
+};
 export const PropertyType = {
     Apartment: 'Apartment',
     House: 'House',
@@ -18,6 +33,12 @@ export const Status = {
     RENTED: 'RENTED',
     RESERVED: 'RESERVED'
 };
+export const RentRequestStatus = {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+    CANCELLED: 'CANCELLED'
+};
 export const Role = {
     TENANT: 'TENANT',
     ADMIN: 'ADMIN',
@@ -27,4 +48,15 @@ export const BookingStatus = {
     PENDING: 'PENDING',
     ACCEPT: 'ACCEPT',
     REJECT: 'REJECT'
+};
+export const TransactionType = {
+    DEPOSIT: 'DEPOSIT',
+    RENT_PAYMENT: 'RENT_PAYMENT',
+    WITHDRAWAL: 'WITHDRAWAL',
+    COMMISSION: 'COMMISSION'
+};
+export const WithdrawalRequestStatus = {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED'
 };

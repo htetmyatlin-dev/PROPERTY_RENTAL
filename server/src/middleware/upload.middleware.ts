@@ -2,16 +2,28 @@ import multer, { diskStorage, type FileFilterCallback } from "multer";
 import type { Request } from "express";
 import { AppError } from "../utils/app.error.js";
 import path from "node:path";
+import fs from "node:fs";
 import { v4 as uuid } from "uuid";
+
+const uploadRoot = path.resolve(process.env.UPLOAD_DIR ?? "src/uploads");
 
 const storage = diskStorage({
   destination: (_req: Request, file: Express.Multer.File, cb) => {
+    let destination: string;
     if (file.fieldname === "propertyImages") {
-      cb(null, "src/uploads/property-images/");
+      destination = path.join(uploadRoot, "property-images");
     } else if (file.fieldname === "profileImage") {
-      cb(null, "src/uploads/profile-images/");
+      destination = path.join(uploadRoot, "profile-images");
     } else {
       cb(new AppError("Invalid field name from file upload", 400), "");
+      return;
+    }
+
+    try {
+      fs.mkdirSync(destination, { recursive: true });
+      cb(null, destination);
+    } catch (error) {
+      cb(error instanceof Error ? error : new Error(String(error)), "");
     }
   },
   filename: (_req: Request, file: Express.Multer.File, cb) => {

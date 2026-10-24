@@ -4,7 +4,10 @@ import { OnlineUsers } from "@/modules/chat/online.users";
 import { AppError } from "@/utils/app.error";
 import { verifyAccessToken } from "@/utils/jwt";
 import { registerNotificationSocketHandler } from "@/modules/notification/notification.socket";
+let ioRef = null;
+export const getIO = () => ioRef;
 export const socketHandler = (io) => {
+    ioRef = io;
     io.use((socket, next) => {
         const { token } = socket.handshake.auth;
         if (!token)

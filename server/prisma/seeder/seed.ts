@@ -1,8 +1,86 @@
-import { prisma } from "@/lib/prisma";
-import { PropertyType, Status } from "../generated/prisma/enums";
+import type { Prisma, User } from "../../generated/prisma/client";
+import { prisma } from "../../src/lib/prisma";
+import bcrypt from "bcrypt";
 
 async function main() {
-  const properties = [
+  const seedPassword: string = await bcrypt.hash("password", 10);
+
+  const users: Partial<User>[] = [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      username: "Admin",
+      email: "admin@gmail.com",
+      password: seedPassword,
+      role: "ADMIN" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "22222222-2222-4222-8222-222222222221",
+      username: "Tenant One",
+      email: "tenant1@gmail.com",
+      password: seedPassword,
+      role: "TENANT" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "22222222-2222-4222-8222-222222222222",
+      username: "Tenant Two",
+      email: "tenant2@gmail.com",
+      password: seedPassword,
+      role: "TENANT" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "22222222-2222-4222-8222-222222222223",
+      username: "Tenant Three",
+      email: "tenant3@gmail.com",
+      password: seedPassword,
+      role: "TENANT" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "22222222-2222-4222-8222-222222222224",
+      username: "Tenant Four",
+      email: "tenant4@gmail.com",
+      password: seedPassword,
+      role: "TENANT" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "33333333-3333-4333-8333-333333333331",
+      username: "Landlord One",
+      email: "landlord1@gmail.com",
+      password: seedPassword,
+      role: "LANDLORD" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "33333333-3333-4333-8333-333333333332",
+      username: "Landlord Two",
+      email: "landlord2@gmail.com",
+      password: seedPassword,
+      role: "LANDLORD" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "33333333-3333-4333-8333-333333333333",
+      username: "Landlord Three",
+      email: "landlord3@gmail.com",
+      password: seedPassword,
+      role: "LANDLORD" as const,
+      isEmailVerified: true,
+    },
+    {
+      id: "33333333-3333-4333-8333-333333333334",
+      username: "Landlord Four",
+      email: "landlord4@gmail.com",
+      password: seedPassword,
+      role: "LANDLORD" as const,
+      isEmailVerified: true,
+    },
+  ];
+
+  const propertySeeds: Omit<Prisma.PropertyUncheckedCreateInput, "landlordId">[] = [
     {
       title: "Modern Apartment in Yangon Downtown",
       description:
@@ -481,12 +559,33 @@ async function main() {
     },
   ];
 
+  const landlordIds = users
+    .filter((user) => user.role === "LANDLORD")
+    .map((user) => user.id)
+    .filter((id): id is string => id !== undefined);
+
+  if (landlordIds.length === 0) {
+    throw new Error("At least one landlord is required to seed properties.");
+  }
+
+  const properties: Prisma.PropertyUncheckedCreateInput[] = propertySeeds.map(
+    (property, index) => ({
+      ...property,
+      landlordId: landlordIds[index % landlordIds.length],
+    }),
+  );
+
+  for (const user of users) {
+    await prisma.user.create({
+      data: user as unknown as User,
+    })
+  }
+
   for (const property of properties) {
     await prisma.property.create({
-      data: { ...property, landlordId: "1574e2ff-8cc6-4b27-8439-97e7f5e3f633" },
+      data: property,
     });
   }
-  console.log("Properties created successfully");
 }
 
 main()

@@ -69,13 +69,20 @@ export const AnyNull = runtime.AnyNull;
 export const ModelName = {
     Chat: 'Chat',
     ChatRead: 'ChatRead',
+    DepositRequest: 'DepositRequest',
+    Escrow: 'Escrow',
     Message: 'Message',
     Notification: 'Notification',
+    Payment: 'Payment',
     Property: 'Property',
+    RentRequest: 'RentRequest',
     Review: 'Review',
     User: 'User',
     VisitBooking: 'VisitBooking',
-    Wishlist: 'Wishlist'
+    Wallet: 'Wallet',
+    WalletTransaction: 'WalletTransaction',
+    Wishlist: 'Wishlist',
+    WithdrawalRequest: 'WithdrawalRequest'
 };
 /**
  * Enums
@@ -105,6 +112,25 @@ export const ChatReadScalarFieldEnum = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
+export const DepositRequestScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    amount: 'amount',
+    paymentMethod: 'paymentMethod',
+    transactionId: 'transactionId',
+    status: 'status',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const EscrowScalarFieldEnum = {
+    id: 'id',
+    paymentId: 'paymentId',
+    amount: 'amount',
+    status: 'status',
+    releaseDate: 'releaseDate',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
 export const MessageScalarFieldEnum = {
     id: 'id',
     chatId: 'chatId',
@@ -121,6 +147,16 @@ export const NotificationScalarFieldEnum = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     userId: 'userId'
+};
+export const PaymentScalarFieldEnum = {
+    id: 'id',
+    rentRequestId: 'rentRequestId',
+    amount: 'amount',
+    landlordAmount: 'landlordAmount',
+    commissionAmount: 'commissionAmount',
+    status: 'status',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 export const PropertyScalarFieldEnum = {
     id: 'id',
@@ -146,6 +182,25 @@ export const PropertyScalarFieldEnum = {
     internetName: 'internetName',
     internetSpeed: 'internetSpeed',
     leaseTermMonths: 'leaseTermMonths',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const RentRequestScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    landlordId: 'landlordId',
+    propertyId: 'propertyId',
+    amount: 'amount',
+    depositAmount: 'depositAmount',
+    startDate: 'startDate',
+    endDate: 'endDate',
+    durationMonths: 'durationMonths',
+    message: 'message',
+    status: 'status',
+    decisionReason: 'decisionReason',
+    decidedAt: 'decidedAt',
+    leaseAgreement: 'leaseAgreement',
+    leaseGeneratedAt: 'leaseGeneratedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
@@ -190,10 +245,36 @@ export const VisitBookingScalarFieldEnum = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
+export const WalletScalarFieldEnum = {
+    id: 'id',
+    balance: 'balance',
+    userId: 'userId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const WalletTransactionScalarFieldEnum = {
+    id: 'id',
+    walletId: 'walletId',
+    type: 'type',
+    amount: 'amount',
+    balanceAfter: 'balanceAfter',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
 export const WishlistScalarFieldEnum = {
     id: 'id',
     userId: 'userId',
     propertyId: 'propertyId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const WithdrawalRequestScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    amount: 'amount',
+    paymentMethod: 'paymentMethod',
+    status: 'status',
+    approvedAt: 'approvedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };

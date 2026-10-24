@@ -5,7 +5,13 @@ export const AuthApi = {
         return (await axiosInstance.post("/auth/login", payload)).data
     },
 
-    register: async(payload: Record<"username" | "email" | "password" | "confirmPassword", string>) => {
+    register: async(payload: {
+        username: string;
+        email: string;
+        password: string;
+        confirmPassword: string;
+        role: "TENANT" | "LANDLORD";
+    }) => {
         return (await axiosInstance.post("/auth/register", payload)).data
     },
 

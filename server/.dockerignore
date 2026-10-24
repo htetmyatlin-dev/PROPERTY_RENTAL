@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+!.env.example
+.git
+coverage
+src/uploads/lease-agreements
+src/uploads/profile-images/*
+!src/uploads/profile-images/.gitkeep
+dist
+generated/prisma

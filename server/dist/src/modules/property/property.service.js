@@ -1,6 +1,8 @@
 import { PropertyRepository } from "@/repositories/property.repository";
 import { AppError, NotFoundError } from "@/utils/app.error";
 import fs from "node:fs";
+import path from "node:path";
+const propertyImageDir = path.join(path.resolve(process.env.UPLOAD_DIR ?? "src/uploads"), "property-images");
 export const getPropertiesService = async (filters, landlordId = null) => {
     const { search, sortBy, status, propertyTypes, bedrooms, bathrooms, priceRange, leaseTermMonths } = filters;
     const page = filters.page || 1;
@@ -70,7 +72,7 @@ export const editPropertyService = async (propertyId, body, files) => {
         throw new AppError("You can upload a maximum of 5 images", 400);
     const imagesToDelete = property.images.filter(img => !existingImages.includes(img));
     imagesToDelete.forEach(img => {
-        const imgPath = `src/uploads/property-images/${img}`;
+        const imgPath = path.join(propertyImageDir, img);
         if (fs.existsSync(imgPath))
             fs.unlink(imgPath, () => { });
     });
@@ -84,7 +86,7 @@ export const deletePropertyService = async (propertyId) => {
     if (!property)
         throw new NotFoundError("Property");
     property.images?.forEach((img) => {
-        const imgPath = `src/uploads/property-images/${img}`;
+        const imgPath = path.join(propertyImageDir, img);
         if (fs.existsSync(imgPath))
             fs.unlink(imgPath, () => { });
     });
@@ -97,7 +99,7 @@ export const bulkDeletePropertiesService = async (ids) => {
         throw new AppError("No properties", 404);
     properties.forEach((property) => {
         property?.images?.forEach((img) => {
-            const imgPath = `src/uploads/property-images/${img}`;
+            const imgPath = path.join(propertyImageDir, img);
             if (fs.existsSync(imgPath))
                 fs.unlink(imgPath, () => { });
         });

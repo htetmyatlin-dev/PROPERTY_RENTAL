@@ -7,6 +7,7 @@ import {
   Field,
   Input,
   Spinner,
+  NativeSelect,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useRegister } from "../hooks/useRegister";
@@ -31,6 +32,7 @@ export const RegisterForm = ({
       email: "",
       password: "",
       confirmPassword: "",
+      role: "TENANT" as const,
     },
     shouldFocusError: false,
   });
@@ -42,6 +44,7 @@ export const RegisterForm = ({
     email: string;
     password: string;
     confirmPassword: string;
+    role: "TENANT" | "LANDLORD";
   }) => mutate(payload);
 
   const navigate = useNavigate();
@@ -115,6 +118,22 @@ export const RegisterForm = ({
             })}
           />
           <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
+        </Field.Root>
+
+        {/* Role */}
+        <Field.Root invalid={!!errors.role}>
+          <Field.Label>Account type</Field.Label>
+          <NativeSelect.Root>
+            <NativeSelect.Field
+              colorPalette="blue"
+              {...register("role", { required: "Please select an account type" })}
+            >
+              <option value="TENANT">Tenant</option>
+              <option value="LANDLORD">Landlord</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+          <Field.ErrorText>{errors.role?.message}</Field.ErrorText>
         </Field.Root>
 
         {/* Password */}

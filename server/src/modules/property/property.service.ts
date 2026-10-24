@@ -2,6 +2,12 @@ import { PropertyRepository } from "@/repositories/property.repository";
 import { PropertyFilters } from "@/types/types";
 import { AppError, NotFoundError } from "@/utils/app.error";
 import fs from "node:fs"
+import path from "node:path"
+
+const propertyImageDir = path.join(
+  path.resolve(process.env.UPLOAD_DIR ?? "src/uploads"),
+  "property-images",
+);
 
 export const getPropertiesService = async (
   filters: PropertyFilters,
@@ -86,7 +92,7 @@ export const editPropertyService = async (propertyId: string, body: any, files: 
 
   const imagesToDelete = property.images.filter(img => !existingImages.includes(img));
   imagesToDelete.forEach(img => {
-    const imgPath = `src/uploads/property-images/${img}`;
+    const imgPath = path.join(propertyImageDir, img);
     if (fs.existsSync(imgPath)) fs.unlink(imgPath, () => {});
   })
 
@@ -103,7 +109,7 @@ export const deletePropertyService = async (propertyId: string) => {
   const property = await PropertyRepository.findById(propertyId);
   if (!property) throw new NotFoundError("Property");
   property.images?.forEach((img) => {
-    const imgPath = `src/uploads/property-images/${img}`;
+    const imgPath = path.join(propertyImageDir, img);
     if (fs.existsSync(imgPath)) fs.unlink(imgPath, () => {});
   });
   await PropertyRepository.delete(propertyId);
@@ -116,7 +122,7 @@ export const bulkDeletePropertiesService = async (ids: string[]) => {
   if (!properties.length) throw new AppError("No properties", 404);
   properties.forEach((property) => {
     property?.images?.forEach((img) => {
-      const imgPath = `src/uploads/property-images/${img}`;
+      const imgPath = path.join(propertyImageDir, img);
       if (fs.existsSync(imgPath)) fs.unlink(imgPath, () => {});
     });
   });

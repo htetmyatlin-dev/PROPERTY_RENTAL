@@ -1,4 +1,15 @@
 import { prisma } from "@/lib/prisma";
+const publicUserSelect = {
+    id: true,
+    username: true,
+    email: true,
+    phone: true,
+    role: true,
+    isEmailVerified: true,
+    profilePicture: true,
+    createdAt: true,
+    updatedAt: true,
+};
 export class UserRepository {
     static async create(data) {
         return prisma.user.create({ data });
@@ -17,12 +28,34 @@ export class UserRepository {
                 id: true,
                 username: true,
                 email: true,
+                phone: true,
                 isEmailVerified: true,
                 role: true,
                 profilePicture: true,
                 createdAt: true,
                 updatedAt: true,
             },
+        });
+    }
+    static async updateProfile(id, data) {
+        return prisma.user.update({
+            where: { id },
+            data,
+            select: publicUserSelect,
+        });
+    }
+    static async updatePassword(id, password) {
+        return prisma.user.update({
+            where: { id },
+            data: { password },
+            select: publicUserSelect,
+        });
+    }
+    static async updateProfilePicture(id, profilePicture) {
+        return prisma.user.update({
+            where: { id },
+            data: { profilePicture },
+            select: publicUserSelect,
         });
     }
     static async verifyEmail(userId) {
