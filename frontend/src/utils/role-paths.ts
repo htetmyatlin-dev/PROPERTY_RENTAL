@@ -14,8 +14,9 @@ const DASHBOARD_PATHS: Record<Role, string> = {
 export const dashboardPathFor = (role: string | undefined | null): string =>
   role && role in DASHBOARD_PATHS ? DASHBOARD_PATHS[role as Role] : "/properties";
 
-/** Notifications live under a role-specific path; admins have no such route. */
+/** Notifications live under a role-specific path. */
 export const notificationsPathFor = (role: string | undefined | null): string | null => {
+  if (role === "ADMIN") return "/admin/notifications";
   if (role === "TENANT") return "/tenant/notifications";
   if (role === "LANDLORD") return "/landlord/notifications";
   return null;

@@ -1,9 +1,11 @@
 ﻿import { prisma } from "@/lib/prisma";
 import { DepositRequestRepository } from "@/repositories/deposit.request.repository";
+import { UserRepository } from "@/repositories/user.repository";
 import { WalletRepository } from "@/repositories/wallet.repository";
 import { WalletTransactionRepository } from "@/repositories/wallet.transaction.repository";
 import { WithdrawalRequestRepository } from "@/repositories/withdrawal.request.repository";
 import { AppError } from "@/utils/app.error";
+import { formatNotificationAmount, notifyAdmins, notifyUser } from "@/utils/notify";
 import { DepositRequestStatus, TransactionType, WithdrawalRequestStatus } from "../../../generated/prisma/enums";
 import type {
     DepositRequestQuery,
@@ -25,14 +27,27 @@ export const depositService = async (userId: string, data: DepositSchema) => {
     const duplicate = await DepositRequestRepository.findPendingByTransactionRef(userId, transactionId);
     if (duplicate) throw new AppError('This transaction reference is already under review', 409);
 
-    return prisma.$transaction(async (tx) => {
+    const deposit = await prisma.$transaction(async (tx) => {
         await WalletRepository.createIfNotExist(userId, tx);
         return DepositRequestRepository.create({ userId, amount, paymentMethod, transactionId }, tx);
     })
+
+    const user = await UserRepository.findById(userId);
+    await notifyAdmins(
+        "New deposit request",
+        `${user?.username ?? "A user"} submitted a deposit request of ${formatNotificationAmount(Number(deposit.amount))}.`,
+    );
+    await notifyUser(
+        userId,
+        "Deposit request submitted",
+        `Your deposit request of ${formatNotificationAmount(Number(deposit.amount))} is awaiting admin approval.`,
+    );
+
+    return deposit;
 }
 
 export const approveDepositRequestService = async (id: string) => {
-    return prisma.$transaction(async (tx) => {
+    const deposit = await prisma.$transaction(async (tx) => {
         const deposit = await DepositRequestRepository.findById(id, tx);
         if (!deposit) throw new AppError('Deposit request not found', 404);
 
@@ -54,10 +69,18 @@ export const approveDepositRequestService = async (id: string) => {
 
         return deposit;
     })
+
+    await notifyUser(
+        deposit.userId,
+        "Deposit approved",
+        `Your deposit of ${formatNotificationAmount(Number(deposit.amount))} was approved and added to your wallet.`,
+    );
+
+    return deposit;
 }
 
 export const rejectDepositRequestService = async (id: string) => {
-    return prisma.$transaction(async (tx) => {
+    const deposit = await prisma.$transaction(async (tx) => {
         const deposit = await DepositRequestRepository.findById(id, tx);
         if (!deposit) throw new AppError('Deposit request not found', 404);
 
@@ -68,6 +91,14 @@ export const rejectDepositRequestService = async (id: string) => {
 
         return deposit;
     })
+
+    await notifyUser(
+        deposit.userId,
+        "Deposit rejected",
+        `Your deposit request of ${formatNotificationAmount(Number(deposit.amount))} was rejected.`,
+    );
+
+    return deposit;
 }
 
 export const getWalletTransactionsService = async (userId: string, query: TransactionQuery) => {
@@ -125,13 +156,26 @@ export const withdrawalService = async (userId: string, data: WithdrawSchema) =>
     const wallet = await WalletRepository.createIfNotExist(userId);
     if (Number(wallet.balance) < amount) throw new AppError('Amount exceeds your available balance', 402);
 
-    return prisma.$transaction(async (tx) => {
+    const withdrawal = await prisma.$transaction(async (tx) => {
         return WithdrawalRequestRepository.create({ userId, amount, paymentMethod }, tx);
     })
+
+    const user = await UserRepository.findById(userId);
+    await notifyAdmins(
+        "New withdrawal request",
+        `${user?.username ?? "A user"} requested a withdrawal of ${formatNotificationAmount(Number(withdrawal.amount))}.`,
+    );
+    await notifyUser(
+        userId,
+        "Withdrawal request submitted",
+        `Your withdrawal request of ${formatNotificationAmount(Number(withdrawal.amount))} is awaiting admin review.`,
+    );
+
+    return withdrawal;
 }
 
 export const approveWithdrawalRequestService = async (id: string) => {
-    return prisma.$transaction(async (tx) => {
+    const withdrawal = await prisma.$transaction(async (tx) => {
         const withdrawal = await WithdrawalRequestRepository.findById(id, tx);
         if (!withdrawal) throw new AppError('Withdrawal request not found', 404);
 
@@ -159,10 +203,18 @@ export const approveWithdrawalRequestService = async (id: string) => {
 
         return withdrawal;
     })
+
+    await notifyUser(
+        withdrawal.userId,
+        "Withdrawal approved",
+        `Your withdrawal of ${formatNotificationAmount(Number(withdrawal.amount))} was approved and paid out.`,
+    );
+
+    return withdrawal;
 }
 
 export const rejectWithdrawalRequestService = async (id: string) => {
-    return prisma.$transaction(async (tx) => {
+    const withdrawal = await prisma.$transaction(async (tx) => {
         const withdrawal = await WithdrawalRequestRepository.findById(id, tx);
         if (!withdrawal) throw new AppError('Withdrawal request not found', 404);
 
@@ -173,6 +225,14 @@ export const rejectWithdrawalRequestService = async (id: string) => {
 
         return withdrawal;
     })
+
+    await notifyUser(
+        withdrawal.userId,
+        "Withdrawal rejected",
+        `Your withdrawal request of ${formatNotificationAmount(Number(withdrawal.amount))} was rejected.`,
+    );
+
+    return withdrawal;
 }
 
 export const getMyWithdrawalRequestsService = async (userId: string, query: MyWithdrawalRequestQuery) => {

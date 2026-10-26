@@ -514,8 +514,8 @@ export function DashboardLayout({ navLinks }: { navLinks: INavLink[] }) {
                 color="fg.muted"
                 size="sm"
                 borderRadius="lg"
-                // Admins have no notifications route, so the control is inert
-                // rather than sending them to a tenant page.
+                // Every role gets a notification inbox under its dashboard;
+                // an unknown role still leaves the control inert.
                 disabled={!notificationsPath}
                 _hover={{ color: "fg", bg: "blue.50", _dark: { bg: "whiteAlpha.100" } }}
                 onClick={() => notificationsPath && navigate(notificationsPath)}

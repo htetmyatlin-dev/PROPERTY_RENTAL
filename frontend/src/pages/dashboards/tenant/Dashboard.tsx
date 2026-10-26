@@ -520,9 +520,14 @@ export function Dashboard() {
           title="Wishlist"
           subtitle="Recently saved"
           action={
-            <Badge colorPalette="pink" variant="subtle" borderRadius="full" size="sm">
-              {cards.wishlistCount}
-            </Badge>
+            <HStack gap={1}>
+              <Badge colorPalette="pink" variant="subtle" borderRadius="full" size="sm">
+                {cards.wishlistCount}
+              </Badge>
+              <Button size="2xs" variant="ghost" borderRadius="lg" onClick={() => navigate("/tenant/wishlist")}>
+                View all
+              </Button>
+            </HStack>
           }
         >
           <WishlistList items={data.wishlist} />

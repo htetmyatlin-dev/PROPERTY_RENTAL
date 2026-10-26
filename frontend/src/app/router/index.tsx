@@ -30,6 +30,7 @@ import {
   LuBanknote,
   LuCoins,
   LuUser,
+  LuHeart,
 } from "react-icons/lu";
 import { Properties } from "@/pages/dashboards/landlord/Properties";
 import { PropertyDetailsPage } from "@/pages/PropertyDetailsPage";
@@ -40,6 +41,7 @@ import { Bookings } from "@/pages/dashboards/landlord/Bookings";
 import { Bookings as TenantBookings } from "@/pages/dashboards/tenant/Bookings";
 import { RentRequests } from "@/pages/dashboards/landlord/RentRequests";
 import { RentRequests as TenantRentRequests } from "@/pages/dashboards/tenant/RentRequests";
+import { Wishlist as TenantWishlist } from "@/pages/dashboards/tenant/Wishlist";
 import { CalendarPage } from "@/pages/dashboards/landlord/CalendarPage";
 import {WalletPage} from "@/pages/dashboards/WalletPage.tsx";
 import { DepositRequests as AdminDepositRequests } from "@/pages/dashboards/admin/DepositRequests";
@@ -56,6 +58,7 @@ const adminNavLinks = [
   { icon: LuCoins, label: "Platform", path: "/admin/platform" },
   { icon: LuChrome, label: "Properties", path: "/admin/properties" },
   { icon: LuUsers, label: "Users", path: "/admin/users" },
+  { icon: LuBell, label: "Notifications", path: "/admin/notifications" },
 ];
 
 const landlordNavLinks = [
@@ -73,6 +76,7 @@ const landlordNavLinks = [
 
 const tenantNavLinks = [
   { icon: LuLayoutDashboard, label: "Dashboard", path: "/tenant/dashboard" },
+  { icon: LuHeart, label: "Wishlist", path: "/tenant/wishlist" },
   { icon: LuCalendarDays, label: "Bookings", path: "/tenant/bookings" },
   { icon: LuFileText, label: "Rent Requests", path: "/tenant/rent-requests" },
   { icon: IoChatbubblesOutline, label: "Chat", path: "/tenant/chat" },
@@ -109,6 +113,7 @@ export const router = createBrowserRouter([
           { path: "platform", element: <AdminPlatform /> },
           { path: "users", element: <AdminUsers /> },
           { path: "properties", element: <AdminProperties /> },
+          { path: "notifications", element: <NotificationPage /> },
         ],
       },
     ],
@@ -146,6 +151,7 @@ export const router = createBrowserRouter([
         element: <DashboardLayout navLinks={tenantNavLinks} />,
         children: [
           { path: "dashboard", element: <TenantDashboard /> },
+          { path: "wishlist", element: <TenantWishlist /> },
           {  path: "bookings", element: <TenantBookings /> },
           { path: "rent-requests", element: <TenantRentRequests /> },
           {  path: "chat", element: <ChatPage /> },

@@ -1,6 +1,7 @@
 import { PropertyRepository } from "@/repositories/property.repository";
 import { PropertyFilters } from "@/types/types";
 import { AppError, NotFoundError } from "@/utils/app.error";
+import { notifyAdmins } from "@/utils/notify";
 import fs from "node:fs"
 import path from "node:path"
 
@@ -78,6 +79,11 @@ export const createPropertyService = async (
     images,
     landlordId: landlordId,
   });
+
+  await notifyAdmins(
+    "New property listing",
+    `A new property "${newProperty.title}" was listed and is waiting for review.`,
+  );
 
   return { property: newProperty };
 };

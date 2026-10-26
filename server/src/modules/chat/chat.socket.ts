@@ -3,7 +3,8 @@ import { MessageRepository } from "@/repositories/message.repository";
 import {Server, Socket} from "socket.io";
 import { ChatPresence } from "./chat.presence";
 import { ChatReadRepository } from "@/repositories/chatread.repository";
-import { NotificationRepository } from "@/repositories/notification.repository";
+import { UserRepository } from "@/repositories/user.repository";
+import { notifyUser } from "@/utils/notify";
 
 export const registerChatSocketHandler = (io: Server, socket: Socket) => {
     const id = socket.data.userId;
@@ -58,8 +59,14 @@ export const registerChatSocketHandler = (io: Server, socket: Socket) => {
         } else {
             const updated = await ChatReadRepository.increaseUnreadCount(chatId, receiverId as string);
             const chatForReceiver = await ChatRepository.getByIdForUser(chatId, receiverId as string);
-            const newNotification = await NotificationRepository.createNotification(receiverId as string, "New Message", `You have a new message from ${id}`);
-            io.to(receiverId as string).emit("notification_created", newNotification);
+            const sender = await UserRepository.findById(id);
+            const senderName = sender?.username ?? "a user";
+            const preview = safeContent.length > 80 ? `${safeContent.slice(0, 77)}...` : safeContent;
+            await notifyUser(
+                receiverId as string,
+                `New message from ${senderName}`,
+                `${senderName}: ${preview}`,
+            );
             io.to(receiverId as string).emit("unread_count_updated", { chatId, unreadCount: updated.unreadCount, chat: chatForReceiver });
         }
     })

@@ -8,6 +8,7 @@ import { useAppStore } from "../store";
 import { SocketContext } from "@/socket/SocketContext";
 import { socket } from "@/socket/socket";
 import type { Notification } from "@/features/notification/type";
+import { toast } from "react-toastify";
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socketConnection, setSocketConnection] = useState<Socket | null>(null);
@@ -45,6 +46,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
           ? prevNotifications
           : [notification, ...prevNotifications]
       );
+      // Real-time toast so pushed notifications are visible outside the inbox.
+      toast.info(notification.title, { toastId: notification.id });
     }
 
     const notificationMarkedRead = (notificationId: string) => {

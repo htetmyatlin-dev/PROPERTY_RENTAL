@@ -1,17 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { getIO } from "@/lib/socket";
 import { prisma } from "@/lib/prisma";
 import type { DbClient } from "@/types/types";
 import { EscrowRepository } from "@/repositories/escrow.repository";
 import { PaymentRepository } from "@/repositories/payment.repository";
-import { NotificationRepository } from "@/repositories/notification.repository";
 import { RentRequestRepository } from "@/repositories/rent.request.repository";
 import { WalletRepository } from "@/repositories/wallet.repository";
 import { WalletTransactionRepository } from "@/repositories/wallet.transaction.repository";
 import { AppError } from "@/utils/app.error";
 import { PLATFORM_COMMISSION_RATE } from "@/utils/commission";
 import { leaseDir, leaseFileNameFor, writeLeaseAgreement } from "@/utils/lease.pdf";
+import { formatNotificationAmount, notifyAdmins, notifyUser } from "@/utils/notify";
 import {
     EscrowStatus,
     RentRequestStatus,
@@ -38,15 +37,6 @@ const quoteFor = (baseRentPrice: number, durationMonths: number) => ({
     amount: round2(baseRentPrice * durationMonths),
     depositAmount: round2(baseRentPrice * DEPOSIT_MONTHS),
 });
-
-const notify = async (userId: string, title: string, content: string) => {
-    try {
-        const notification = await NotificationRepository.createNotification(userId, title, content);
-        getIO()?.to(userId).emit("notification_created", notification);
-    } catch (error) {
-        console.error("Failed to create notification", error);
-    }
-};
 
 const parseDate = (value: string) => new Date(value);
 
@@ -107,11 +97,17 @@ export const createRentRequestService = async (userId: string, data: CreateRentR
         message: data.message ?? null,
     });
 
-    await notify(
-        property.landlordId,
-        "New rent request",
-        `You have a new rent request for "${property.title}".`,
-    );
+    await Promise.all([
+        notifyUser(
+            property.landlordId,
+            "New rent request",
+            `You have a new rent request for "${property.title}".`,
+        ),
+        notifyAdmins(
+            "New rent request",
+            `A tenant submitted a rent request for "${property.title}".`,
+        ),
+    ]);
 
     return RentRequestRepository.findDetailedById(rentRequest.id);
 };
@@ -367,10 +363,19 @@ export const approveRentRequestService = async (
     // intact, and the agreement can be regenerated on demand.
     await generateLeaseAgreement(rentRequest.id);
 
-    await notify(
+    await notifyUser(
         rentRequest.userId,
         "Rent request approved",
         `Your rent request for "${propertyTitle}" was approved. The security deposit is held in escrow and your lease agreement is ready to download.`,
+    );
+    await notifyUser(
+        rentRequest.landlordId,
+        "Rent request approved",
+        `You approved the rent request for "${propertyTitle}". The security deposit is now held in escrow.`,
+    );
+    await notifyAdmins(
+        "Rent request approved",
+        `"${propertyTitle}" was approved. The security deposit is now held in escrow.`,
     );
 
     return RentRequestRepository.findDetailedById(id);
@@ -403,7 +408,7 @@ export const rejectRentRequestService = async (
         return rentRequest;
     });
 
-    await notify(
+    await notifyUser(
         rentRequest.userId,
         "Rent request rejected",
         decisionReason
@@ -510,10 +515,15 @@ export const releaseEscrowService = async (
         return { rentRequest, landlordAmount: Number(payment.landlordAmount) };
     });
 
-    await notify(
+    await notifyUser(
         rentRequest.userId,
         "Deposit released",
-        `The security deposit of ${landlordAmount} has been released to the landlord.`,
+        `The security deposit of ${formatNotificationAmount(landlordAmount)} has been released to the landlord.`,
+    );
+    await notifyUser(
+        rentRequest.landlordId,
+        "Deposit released to your wallet",
+        `The security deposit of ${formatNotificationAmount(landlordAmount)} has been credited to your wallet.`,
     );
 
     return PaymentRepository.findById(paymentId);
@@ -556,10 +566,10 @@ export const refundEscrowService = async (paymentId: string) => {
         return { rentRequest, amount: Number(payment.amount) };
     });
 
-    await notify(
+    await notifyUser(
         rentRequest.userId,
         "Deposit refunded",
-        `Your security deposit of ${amount} has been refunded to your wallet.`,
+        `Your security deposit of ${formatNotificationAmount(amount)} has been refunded to your wallet.`,
     );
 
     return PaymentRepository.findById(paymentId);

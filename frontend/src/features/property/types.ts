@@ -37,3 +37,49 @@ export interface IProperty {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface IWishlistProperty {
+  id: string;
+  landlordId: string;
+  title: string;
+  description: string;
+  baseRentPrice: number;
+  beds: number | null;
+  baths: number | null;
+  area: number | null;
+  propertyType: string;
+  status: string;
+  locationAddress?: string | null;
+  coordinates: number[];
+  images: string[];
+  nearTransitType?: string | null;
+  nearTransitDist?: number | null;
+  parkingSpaces: number;
+  yearBuilt?: number | null;
+  petAllowed: boolean;
+  appliances: string[];
+  availableDate?: string | null;
+  internetName?: string | null;
+  internetSpeed?: string | null;
+  leaseTermMonths?: number | null;
+  createdAt: string;
+  updatedAt: string;
+  landlord: {
+    id: string;
+    username: string;
+    profilePicture: string | null;
+  };
+}
+
+export interface IWishlistItem {
+  id: string;
+  userId: string;
+  propertyId: string;
+  createdAt: string;
+  updatedAt: string;
+  property: IWishlistProperty;
+}
+
+export interface IWishlistResponse {
+  wishlist: IWishlistItem[];
+}
